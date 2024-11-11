@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  sol-meme-sniper-bot-postgres:
+    image: postgres:9-alpine
+    container_name: sol-meme-sniper-bot-postgres
+    ports:
+      - ${PG_PORT}:5432
+    environment:
+      POSTGRES_USER: ${PG_USERNAME}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: ${PG_DB}
+    tmpfs:
+      - /data
