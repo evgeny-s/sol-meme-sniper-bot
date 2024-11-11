@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PumpFunClientModule } from './pump-fun-client/pump-fun-client.module';
 import { SolanaClientModule } from './solana-client/solana-client.module';
 import { TokenWatcherModule } from './token-watcher/token-watcher.module';
+import { PositionModule } from './position/position.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { TokenWatcherModule } from './token-watcher/token-watcher.module';
     PumpFunClientModule,
     SolanaClientModule,
     TokenWatcherModule,
+    PositionModule,
   ],
 })
 export class AppModule {}
