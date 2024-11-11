@@ -1,5 +1,10 @@
 # Solana Pump.fun sniper bot
 
+### Description
+Poll the pump.fun website and check if the token is about to complete the bounding period. 
+Once the bounding is finished, it swap the token and check the status and prices. 
+Based on the configured strategies can book the profit (or loss). 
+
 ### How to start
 
 1. Copy the ENV file and update all the ENV params
