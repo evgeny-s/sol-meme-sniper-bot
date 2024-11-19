@@ -10,11 +10,16 @@ export class TokenWatcherService {
 
   private locked = false;
 
+  private solanaAmountPerToken: number;
+
   public constructor(
     private readonly tickerService: TickerService,
     private readonly positionService: PositionService,
     private readonly solanaClientService: SolanaCpmmClientService,
-  ) {}
+  ) {
+    this.solanaAmountPerToken =
+      Number(process.env.SOLANA_AMOUNT_PER_TOKEN) || 10000000; // 0.01 SOL
+  }
 
   @Cron('05,15,25,35,45,55 * * * * *')
   public async watch() {
@@ -65,7 +70,7 @@ export class TokenWatcherService {
           );
           await this.positionService.create({
             raydiumPool: first.raydiumPool,
-            amount: 10000000,
+            amount: this.solanaAmountPerToken,
             price,
           }); // 0.01 SOL
 
