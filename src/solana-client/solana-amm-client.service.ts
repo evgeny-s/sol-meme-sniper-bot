@@ -10,7 +10,7 @@ import {
 import * as BN from 'bn.js';
 import { NATIVE_MINT } from '@solana/spl-token';
 
-import { Connection, Keypair, clusterApiUrl } from '@solana/web3.js';
+import { Connection, Keypair, clusterApiUrl, PublicKey } from '@solana/web3.js';
 import bs58 from 'bs58';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -64,11 +64,33 @@ export class SolanaAmmClientService {
     const data = await this.raydium.api.fetchPoolById({ ids: poolId });
     const poolInfo = data[0] as ApiV3PoolInfoStandardItem;
 
+    const rpcData = await this.raydium.liquidity.getRpcPoolInfo(poolId);
+
     if (!poolInfo) {
       throw new Error('Pool Info is empty');
     }
 
-    return poolInfo.price;
+    return rpcData.poolPrice;
+  }
+
+  public async buy(poolId: string, amountIn: number) {
+    return this.swapToken(poolId, amountIn);
+  }
+
+  public async sell(poolId: string) {
+    await this.initSdk();
+
+    const data = await this.raydium.api.fetchPoolById({ ids: poolId });
+    const balance = await this.connection.getParsedTokenAccountsByOwner(
+      new PublicKey(this.owner.publicKey),
+      { mint: new PublicKey(data[0].mintB.address) },
+    );
+
+    return this.swapToken(
+      poolId,
+      balance.value[0]?.account.data.parsed.info.tokenAmount.amount || 0,
+      data[0].mintB.address,
+    );
   }
 
   public async swapToken(

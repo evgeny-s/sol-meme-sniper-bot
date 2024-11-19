@@ -5,6 +5,7 @@ import { Cron } from '@nestjs/schedule';
 import { TelegramBotService } from '../telegram-bot/telegram-bot.service';
 import { UsersService } from '../user';
 import { SolanaAmmClientService } from '../solana-client/solana-amm-client.service';
+import { User } from '../user/user.entity';
 
 @Injectable()
 export class PositionProcessorService {
@@ -12,23 +13,20 @@ export class PositionProcessorService {
 
   private locked = false;
 
+  private sellRatio: number;
+
   public constructor(
     private readonly solanaClientService: SolanaAmmClientService,
     private readonly positionService: PositionService,
     @Inject(TelegramBotService)
     private readonly telegramBotService: TelegramBotService,
     @Inject(UsersService) private readonly usersService: UsersService,
-  ) {}
+  ) {
+    this.sellRatio = Number(process.env.TOKEN_SELL_RATION) || 5;
+  }
 
-  private async processBuyOperations() {
+  private async processBuyOperations(user: User) {
     const positions = await this.positionService.getByStatus(StatusEnum.NEW);
-    const users = await this.usersService.findActiveUsers();
-
-    if (!users.length) {
-      this.logger.log('No active users!');
-
-      return;
-    }
 
     if (!positions.length) {
       return;
@@ -36,7 +34,7 @@ export class PositionProcessorService {
 
     for (const position of positions) {
       try {
-        await this.solanaClientService.swapToken(
+        await this.solanaClientService.buy(
           position.raydiumPool,
           position.amount,
         );
@@ -44,8 +42,8 @@ export class PositionProcessorService {
         await this.positionService.updateStatus(position, StatusEnum.PURCHASED);
 
         await this.telegramBotService.sendMessage(
-          users[0].chatId,
-          `Swapped the token: ${position.raydiumPool}`,
+          user.chatId,
+          `Purchased the token: ${position.raydiumPool}`,
         );
       } catch (e) {
         this.logger.error(`Something is wrong: ${e.message}`);
@@ -53,7 +51,36 @@ export class PositionProcessorService {
     }
   }
 
-  private async processSellOperations() {
+  private async processSellOperations(user: User) {
+    const positions = await this.positionService.getByStatus(
+      StatusEnum.PURCHASED,
+    );
+
+    if (!positions.length) {
+      return;
+    }
+
+    for (const position of positions) {
+      try {
+        const price = await this.solanaClientService.getPrice(
+          position.raydiumPool,
+        );
+
+        if (price / position.price > this.sellRatio) {
+          await this.solanaClientService.sell(position.raydiumPool);
+        }
+
+        await this.positionService.updateStatus(position, StatusEnum.SOLD);
+
+        await this.telegramBotService.sendMessage(
+          user.chatId,
+          `Sold the token: ${position.raydiumPool}`,
+        );
+      } catch (e) {
+        this.logger.error(`Something is wrong: ${e.message}`);
+      }
+    }
+
     /*
     SELL operation:
       - Fetch all positions with status PURCHASED
@@ -78,7 +105,17 @@ export class PositionProcessorService {
       this.locked = true;
     }
 
-    await this.processBuyOperations();
+    const users = await this.usersService.findActiveUsers();
+
+    if (!users.length) {
+      this.logger.log('No active users!');
+
+      return;
+    }
+
+    await this.processBuyOperations(users[0]);
+
+    await this.processSellOperations(users[0]);
 
     this.locked = false;
 

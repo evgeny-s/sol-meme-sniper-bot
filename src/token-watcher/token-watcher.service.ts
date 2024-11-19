@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { TickerService } from '../ticker/ticker.service';
 import { PositionService } from '../position/position.service';
-import { SolanaCpmmClientService } from '../solana-client/solana-cpmm-client.service';
+import { SolanaAmmClientService } from '../solana-client/solana-amm-client.service';
 
 @Injectable()
 export class TokenWatcherService {
@@ -15,7 +15,7 @@ export class TokenWatcherService {
   public constructor(
     private readonly tickerService: TickerService,
     private readonly positionService: PositionService,
-    private readonly solanaClientService: SolanaCpmmClientService,
+    private readonly solanaClientService: SolanaAmmClientService,
   ) {
     this.solanaAmountPerToken =
       Number(process.env.SOLANA_AMOUNT_PER_TOKEN) || 10000000; // 0.01 SOL
