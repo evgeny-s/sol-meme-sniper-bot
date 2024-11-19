@@ -72,7 +72,7 @@ export class TokenWatcherService {
             raydiumPool: first.raydiumPool,
             amount: this.solanaAmountPerToken,
             price,
-          }); // 0.01 SOL
+          }); // 0.01 SOL - ~$2
 
           this.logger.log(`Created a position for ${first.raydiumPool}`);
         }
