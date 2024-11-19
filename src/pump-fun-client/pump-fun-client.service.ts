@@ -58,9 +58,7 @@ export class PumpFunClientService {
       this.logger.log(`About to send the request with params: url=${url}`);
       result = await this.httpService.request(config).toPromise();
     } catch (e) {
-      console.log(e);
-
-      this.logger.log('Request error:');
+      this.logger.log(`Request error: ${e.message}`);
 
       throw e;
     }

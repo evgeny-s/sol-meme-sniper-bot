@@ -37,6 +37,7 @@ export class Ticker {
   @Column({ default: null })
   raydiumPool: string;
 
+  @Index()
   @Column({ default: null })
   mint: string;
 

@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { SolanaClientService } from './solana-client.service';
+import { SolanaCpmmClientService } from './solana-cpmm-client.service';
+import { SolanaAmmClientService } from './solana-amm-client.service';
 
 @Module({
-  providers: [SolanaClientService],
-  exports: [SolanaClientService],
+  providers: [SolanaCpmmClientService, SolanaAmmClientService],
+  exports: [SolanaCpmmClientService, SolanaAmmClientService],
 })
 export class SolanaClientModule {}

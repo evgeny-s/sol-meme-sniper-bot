@@ -1,27 +1,82 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { SolanaClientService } from '../solana-client/solana-client.service';
+import { TickerService } from '../ticker/ticker.service';
+import { PositionService } from '../position/position.service';
+import { SolanaCpmmClientService } from '../solana-client/solana-cpmm-client.service';
 
 @Injectable()
 export class TokenWatcherService {
   private readonly logger = new Logger(TokenWatcherService.name);
 
+  private locked = false;
+
   public constructor(
-    private readonly solanaClientService: SolanaClientService,
+    private readonly tickerService: TickerService,
+    private readonly positionService: PositionService,
+    private readonly solanaClientService: SolanaCpmmClientService,
   ) {}
 
-  // @Cron('05 * * * * *')
+  @Cron('05,15,25,35,45,55 * * * * *')
   public async watch() {
     this.logger.log('Starting the Token Watcher...');
     const startTime = performance.now();
 
-    const tx = await this.solanaClientService.swapToken(
-      '7JuwJuNU88gurFnyWeiyGKbFmExMWcmRZntn9imEzdny',
-      6,
-      'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
-    );
+    if (this.locked) {
+      this.logger.log(
+        `The service ${TokenWatcherService.name} is locked, skipping...`,
+      );
 
-    this.logger.log('Transaction: ', tx);
+      return;
+    } else {
+      this.locked = true;
+    }
+
+    try {
+      const mints = await this.tickerService.getUniqueTickers();
+
+      for (const mint of mints) {
+        const recentTickers = await this.tickerService.getTickersByMint(
+          mint,
+          2,
+        );
+
+        if (recentTickers.length <= 1) {
+          continue;
+        }
+
+        const first = recentTickers.shift();
+        const last = recentTickers.pop();
+
+        // newly added pool
+        if (first.raydiumPool !== last.raydiumPool && first.raydiumPool) {
+          const positions = await this.positionService.getByPool(
+            first.raydiumPool,
+          );
+
+          if (positions.length) {
+            this.logger.log(
+              `Skipping, since the position has already opened for pool: ${first.raydiumPool}`,
+            );
+            continue;
+          }
+
+          const price = await this.solanaClientService.getPrice(
+            first.raydiumPool,
+          );
+          await this.positionService.create({
+            raydiumPool: first.raydiumPool,
+            amount: 10000000,
+            price,
+          }); // 0.01 SOL
+
+          this.logger.log(`Created a position for ${first.raydiumPool}`);
+        }
+      }
+    } catch (e) {
+      this.logger.error(`Something went wrong. Error: ${e.message}`);
+    }
+
+    this.locked = false;
 
     const endTime = performance.now();
     this.logger.log(

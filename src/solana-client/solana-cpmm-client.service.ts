@@ -16,8 +16,8 @@ import bs58 from 'bs58';
 import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
-export class SolanaClientService {
-  private readonly logger = new Logger(SolanaClientService.name);
+export class SolanaCpmmClientService {
+  private readonly logger = new Logger(SolanaCpmmClientService.name);
 
   private raydium: Raydium;
 
@@ -114,6 +114,19 @@ export class SolanaClientService {
     );
 
     return txId;
+  }
+
+  public async getPrice(poolId: string): Promise<number> {
+    await this.initSdk();
+
+    const data = await this.raydium.api.fetchPoolById({ ids: poolId });
+    const poolInfo = data[0] as ApiV3PoolInfoStandardItemCpmm;
+
+    if (!poolInfo) {
+      throw new Error('Pool Info is empty');
+    }
+
+    return poolInfo.price;
   }
 
   private isValidCpmm(id: string): boolean {

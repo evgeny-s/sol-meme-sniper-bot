@@ -41,4 +41,21 @@ export class TickerService {
 
     await this.tickersRepository.insert(tickers);
   }
+
+  public async getUniqueTickers(): Promise<string[]> {
+    const result = await this.tickersRepository
+      .createQueryBuilder('ticker')
+      .distinctOn(['ticker.mint'])
+      .getRawMany();
+
+    return result.map((ticker) => ticker.ticker_mint).filter(Boolean);
+  }
+
+  public async getTickersByMint(mint: string, limit: number) {
+    return await this.tickersRepository.find({
+      where: { mint },
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
+  }
 }
