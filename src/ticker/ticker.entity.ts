@@ -12,7 +12,6 @@ export class Ticker {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index()
   @Column({ default: null })
   name: string;
 
