@@ -69,4 +69,15 @@ export class TickerService {
       take: limit,
     });
   }
+
+  public async removeOlderThenDate(to: number): Promise<number> {
+    const result = await this.tickersRepository
+      .createQueryBuilder('ticker')
+      .delete()
+      .from(Ticker)
+      .where('createdAt < :toDate', { toDate: new Date(to) })
+      .execute();
+
+    return result.affected;
+  }
 }
