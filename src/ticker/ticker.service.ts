@@ -42,6 +42,14 @@ export class TickerService {
     await this.tickersRepository.insert(tickers);
   }
 
+  public async getAllTicker(): Promise<Ticker[]> {
+    return this.tickersRepository
+      .createQueryBuilder('ticker')
+      .groupBy('ticker.id, ticker.mint')
+      .orderBy('ticker.usdMarketCap', 'DESC')
+      .execute();
+  }
+
   public async getUniqueTickers(): Promise<string[]> {
     const result = await this.tickersRepository
       .createQueryBuilder('ticker')
@@ -51,7 +59,10 @@ export class TickerService {
     return result.map((ticker) => ticker.ticker_mint).filter(Boolean);
   }
 
-  public async getTickersByMint(mint: string, limit: number) {
+  public async getTickersByMint(
+    mint: string,
+    limit: number,
+  ): Promise<Ticker[]> {
     return await this.tickersRepository.find({
       where: { mint },
       order: { createdAt: 'DESC' },

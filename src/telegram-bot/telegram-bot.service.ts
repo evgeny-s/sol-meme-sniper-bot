@@ -12,6 +12,7 @@ import {
 import { Inject, Logger } from '@nestjs/common';
 import { UsersService } from '../user';
 import { User } from '../user/user.entity';
+import { TickerService } from '../ticker/ticker.service';
 
 export const NO_ACCESS_MESSAGE =
   'Это бот который показывает уведомления по pump.fun платформе. Похоже что у вас нет подписки или она просрочена. Свяжитесь с @man_s1024 для получения доступа к боту.';
@@ -28,10 +29,18 @@ export class TelegramBotService {
   public constructor(
     @InjectBot() private readonly bot: Telegraf<Context>,
     @Inject(UsersService) private readonly usersService: UsersService,
+    @Inject(TickerService) private readonly tickerService: TickerService,
   ) {
     this.bot.telegram.setMyCommands([
       { command: 'start', description: 'Начнём!' },
     ]);
+  }
+
+  @Action('menu')
+  public async settings(@Ctx() ctx: Context) {
+    await ctx.deleteMessage();
+
+    await this.renderList(ctx);
   }
 
   // TODO: Fix ctx any
@@ -68,6 +77,7 @@ export class TelegramBotService {
       `
 Привет, я pump.fun бот 🤖. Я анализирую мем коины и буду скидывать уведомления.
       `,
+      Markup.inlineKeyboard([Markup.button.callback('✨ Меню ✨', `menu`)]),
     );
   }
 
@@ -93,16 +103,24 @@ export class TelegramBotService {
     }
   }
 
-  private async renderList(ctx: Context) {
-    const user = await this.getUser(ctx);
+  @Action('tokens_list')
+  public async addItemAction(@Ctx() ctx: Context) {
+    await ctx.deleteMessage();
 
+    const tokens = [{ name: 'test', raydiumPool: 'test', usdMarketCap: 0 }]; //await this.tickerService.getAllTicker();
+
+    await ctx.reply(
+      `${tokens.map((token) => `${token.name} ${token.raydiumPool} ${token.usdMarketCap}`).join('\\n')}`,
+    );
+
+    // await this.renderList(ctx);
+  }
+
+  private async renderList(ctx: Context) {
     return ctx.reply(
-      'Твои сигналы (нажми чтобы редактировать):',
+      'Меню:',
       Markup.inlineKeyboard(
-        [
-          Markup.button.callback('➕ Добавить новый', `add_new_item`),
-          Markup.button.callback('⬅️ Назад', `start`),
-        ],
+        [Markup.button.callback(' 📋 Вывести список токенов', `tokens_list`)],
         {
           columns: 1,
         },
