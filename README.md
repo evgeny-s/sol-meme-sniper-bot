@@ -35,4 +35,4 @@ docker-compose --env-file=.env up -d
 
 ### How to deploy to Heroku:
 1. Create app in Heroku
-2. Update CI/CD scripts
+2. Update Github secrets with params from CI/CD workflows
