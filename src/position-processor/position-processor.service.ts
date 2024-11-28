@@ -34,6 +34,11 @@ export class PositionProcessorService {
 
     for (const position of positions) {
       try {
+        await this.telegramBotService.sendMessage(
+          user.chatId,
+          `Trying to purchase the token for pool: ${position.raydiumPool}`,
+        );
+
         await this.solanaClientService.buy(
           position.raydiumPool,
           position.amount,
@@ -67,6 +72,11 @@ export class PositionProcessorService {
         );
 
         if (price / position.price > this.sellRatio) {
+          await this.telegramBotService.sendMessage(
+            user.chatId,
+            `Trying to sell the token for pool: ${position.raydiumPool}`,
+          );
+
           await this.solanaClientService.sell(position.raydiumPool);
         }
 
