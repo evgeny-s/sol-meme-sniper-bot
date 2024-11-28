@@ -67,7 +67,7 @@ export class SolanaAmmClientService {
     const rpcData = await this.raydium.liquidity.getRpcPoolInfo(poolId);
 
     if (!poolInfo) {
-      throw new Error('Pool Info is empty');
+      throw new Error(`Pool Info is empty for poolId ${poolId}`);
     }
 
     return Number(rpcData.poolPrice);
