@@ -52,6 +52,7 @@ export class PositionProcessorService {
           `Purchased the token: ${position.raydiumPool}`,
         );
       } catch (e) {
+        await this.positionService.updateStatus(position, StatusEnum.FAILED);
         Sentry.captureException(e);
         this.logger.error(`Something is wrong: ${e.message}`);
       }
