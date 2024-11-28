@@ -26,10 +26,10 @@ const sessions = new LocalSession({
 @Module({
   imports: [
     SentryModule.forRoot(),
+    ConfigModule.forRoot(),
     ScheduleModule.forRoot(),
     TickerFetcherModule,
     TickerModule,
-    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.PG_HOST,

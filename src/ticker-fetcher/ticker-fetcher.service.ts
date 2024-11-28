@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PumpFunClientService } from '../pump-fun-client/pump-fun-client.service';
 import { TickerService } from '../ticker/ticker.service';
 import { Cron } from '@nestjs/schedule';
+import * as Sentry from '@sentry/node';
 
 const HISTORY_TIME_RANGE_SECONDS = 3600;
 
@@ -36,6 +37,7 @@ export class TickerFetcherService {
 
       await this.tickerService.bulkAdd(coins);
     } catch (e) {
+      Sentry.captureException(e);
       this.logger.error(`Something went wrong. Error: ${e.message}`);
     }
 

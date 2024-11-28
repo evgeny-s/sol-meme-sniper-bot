@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { TickerService } from '../ticker/ticker.service';
 import { PositionService } from '../position/position.service';
 import { SolanaAmmClientService } from '../solana-client/solana-amm-client.service';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class TokenWatcherService {
@@ -78,6 +79,7 @@ export class TokenWatcherService {
         }
       }
     } catch (e) {
+      Sentry.captureException(e);
       this.logger.error(`Something went wrong. Error: ${e.message}`);
     }
 

@@ -6,6 +6,7 @@ import { TelegramBotService } from '../telegram-bot/telegram-bot.service';
 import { UsersService } from '../user';
 import { SolanaAmmClientService } from '../solana-client/solana-amm-client.service';
 import { User } from '../user/user.entity';
+import * as Sentry from '@sentry/node';
 
 @Injectable()
 export class PositionProcessorService {
@@ -51,6 +52,7 @@ export class PositionProcessorService {
           `Purchased the token: ${position.raydiumPool}`,
         );
       } catch (e) {
+        Sentry.captureException(e);
         this.logger.error(`Something is wrong: ${e.message}`);
       }
     }
@@ -87,6 +89,7 @@ export class PositionProcessorService {
           `Sold the token: ${position.raydiumPool}`,
         );
       } catch (e) {
+        Sentry.captureException(e);
         this.logger.error(`Something is wrong: ${e.message}`);
       }
     }

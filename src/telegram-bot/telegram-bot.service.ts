@@ -109,6 +109,8 @@ export class TelegramBotService {
 
     const positions = await this.positionService.getAll();
 
+    await ctx.reply(`Positions:`);
+
     for (const position of positions) {
       await ctx.reply(
         `ID: ${position.id}, Status: ${position.status}, Pool: ${position.raydiumPool} `,
