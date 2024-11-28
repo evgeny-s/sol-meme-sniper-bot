@@ -37,10 +37,10 @@ export class TokenWatcherService {
       this.locked = true;
     }
 
-    try {
-      const mints = await this.tickerService.getUniqueTickers();
+    const mints = await this.tickerService.getUniqueTickers();
 
-      for (const mint of mints) {
+    for (const mint of mints) {
+      try {
         const recentTickers = await this.tickerService.getTickersByMint(
           mint,
           2,
@@ -77,10 +77,12 @@ export class TokenWatcherService {
 
           this.logger.log(`Created a position for ${first.raydiumPool}`);
         }
+      } catch (e) {
+        Sentry.captureException(e);
+        this.logger.error(
+          `Something went wrong with the mint: ${mint}. Skipping it. Error: ${e.message}`,
+        );
       }
-    } catch (e) {
-      Sentry.captureException(e);
-      this.logger.error(`Something went wrong. Error: ${e.message}`);
     }
 
     this.locked = false;
