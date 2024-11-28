@@ -28,6 +28,8 @@
     "@nestjs/schedule": "^4.1.1",
     "@nestjs/typeorm": "^10.0.2",
     "@raydium-io/raydium-sdk-v2": "^0.1.74-alpha",
+    "@sentry/nestjs": "^8.41.0",
+    "@sentry/profiling-node": "^8.41.0",
     "@solana/spl-token": "^0.4.9",
     "@solana/web3.js": "^1.95.4",
     "axios": "^1.7.7",

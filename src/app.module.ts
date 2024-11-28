@@ -17,6 +17,7 @@ import { TelegrafModule, TelegrafModuleAsyncOptions } from 'nestjs-telegraf';
 import { NO_ACCESS_MESSAGE } from './telegram-bot/telegram-bot.service';
 import * as LocalSession from 'telegraf-session-local';
 import { Position } from './position/position.entity';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 const sessions = new LocalSession({
   database: './bot_session_db.json',
@@ -24,6 +25,7 @@ const sessions = new LocalSession({
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ScheduleModule.forRoot(),
     TickerFetcherModule,
     TickerModule,
