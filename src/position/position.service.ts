@@ -32,6 +32,12 @@ export class PositionService {
     return this.positionsRepository.save(position);
   }
 
+  public getAll(): Promise<Position[]> {
+    return this.positionsRepository.find({
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   public getByStatus(status: StatusEnum): Promise<Position[]> {
     return this.positionsRepository.find({
       where: { status },

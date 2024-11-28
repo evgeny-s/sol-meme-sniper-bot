@@ -70,7 +70,7 @@ export class SolanaAmmClientService {
       throw new Error('Pool Info is empty');
     }
 
-    return rpcData.poolPrice;
+    return Number(rpcData.poolPrice);
   }
 
   public async buy(poolId: string, amountIn: number) {

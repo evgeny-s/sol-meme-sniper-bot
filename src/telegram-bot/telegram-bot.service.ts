@@ -12,7 +12,7 @@ import {
 import { Inject, Logger } from '@nestjs/common';
 import { UsersService } from '../user';
 import { User } from '../user/user.entity';
-import { TickerService } from '../ticker/ticker.service';
+import { PositionService } from '../position/position.service';
 
 export const NO_ACCESS_MESSAGE =
   'Это бот который показывает уведомления по pump.fun платформе. Похоже что у вас нет подписки или она просрочена. Свяжитесь с @man_s1024 для получения доступа к боту.';
@@ -29,7 +29,7 @@ export class TelegramBotService {
   public constructor(
     @InjectBot() private readonly bot: Telegraf<Context>,
     @Inject(UsersService) private readonly usersService: UsersService,
-    @Inject(TickerService) private readonly tickerService: TickerService,
+    @Inject(PositionService) private readonly positionService: PositionService,
   ) {
     this.bot.telegram.setMyCommands([
       { command: 'start', description: 'Начнём!' },
@@ -103,24 +103,29 @@ export class TelegramBotService {
     }
   }
 
-  @Action('tokens_list')
+  @Action('positions_list')
   public async addItemAction(@Ctx() ctx: Context) {
     await ctx.deleteMessage();
 
-    const tokens = [{ name: 'test', raydiumPool: 'test', usdMarketCap: 0 }]; //await this.tickerService.getAllTicker();
+    const positions = await this.positionService.getAll();
 
-    await ctx.reply(
-      `${tokens.map((token) => `${token.name} ${token.raydiumPool} ${token.usdMarketCap}`).join('\\n')}`,
-    );
-
-    // await this.renderList(ctx);
+    for (const position of positions) {
+      await ctx.reply(
+        `ID: ${position.id}, Status: ${position.status}, Pool: ${position.raydiumPool} `,
+      );
+    }
   }
 
   private async renderList(ctx: Context) {
     return ctx.reply(
       'Меню:',
       Markup.inlineKeyboard(
-        [Markup.button.callback(' 📋 Вывести список токенов', `tokens_list`)],
+        [
+          Markup.button.callback(
+            ' 📋 Вывести список позиций',
+            `positions_list`,
+          ),
+        ],
         {
           columns: 1,
         },
